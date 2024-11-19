@@ -1,60 +1,40 @@
 import requests
-from bs4 import BeautifulSoup
 
 def get_cve_info(cve_id):
-    url = f"https://nvd.nist.gov/vuln/detail/{cve_id}"
+    url = f"https://services.nvd.nist.gov/rest/json/cves/2.0"
+    params = {
+        "cveId": cve_id  # Filtro para el CVE
+    }
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, params=params)
         if response.status_code == 200:
-            # Parseamos el contenido de la página
-            soup = BeautifulSoup(response.content, "html.parser")
-
-            # Imprimir el HTML para depuración si es necesario
-            # print(soup.prettify())
-
-            # Buscar la información del CVSS (puede estar en un <pre> dentro de un <td>)
-            cvss_score_cell = soup.find("td", {"data-testid": "vuln-change-history-45-new"})
-            if cvss_score_cell:
-                cvss_score = cvss_score_cell.get_text(strip=True)
+            data = response.json()
+            # Verificamos si hay datos en la respuesta
+            if "vulnerabilities" in data and data["vulnerabilities"]:
+                vuln_data = data["vulnerabilities"][0]
+                
+                cvss = vuln_data.get("metrics", {}).get("cvssMetricV31", [{}])[0].get("cvssData", {})
+                description = vuln_data.get("cve", {}).get("descriptions", [{}])[0].get("value", "No encontrado")
+                return {
+                    "cve_id": cve_id,
+                    "description": description,
+                    "cvss_score": cvss.get("baseScore", "No encontrado"),
+                    "cvss_version": cvss.get("version", "No encontrado")
+                }
             else:
-                cvss_score = "No encontrado"
-
-            # Buscar el tipo de CVSS (por ejemplo, V3.1)
-            cvss_type_cell = soup.find("td", {"data-testid": "vuln-change-history-45-type"})
-            if cvss_type_cell:
-                cvss_type = cvss_type_cell.get_text(strip=True)
-            else:
-                cvss_type = "No encontrado"
-
-            # También podemos buscar una breve descripción si está disponible
-            description = soup.find("p", {"class": "vuln-description"})
-            if description:
-                description_text = description.get_text(strip=True)
-            else:
-                description_text = "No encontrado"
-
-            # Devolvemos la información encontrada
-            return {
-                'cve_id': cve_id,
-                'cvss_score': cvss_score,
-                'cvss_type': cvss_type,
-                'description': description_text
-            }
-
+                return {"error": "No se encontraron datos para este CVE"}
         else:
-            print(f"Error: No se pudo acceder a la página. Status code: {response.status_code}")
-            return None
+            return {"error": f"Error en la solicitud: C贸digo {response.status_code}"}
     except requests.exceptions.RequestException as e:
-        print(f"Error de conexión: {e}")
-        return None
+        return {"error": f"Error de conexi贸n: {e}"}
 
-# Ejemplo de uso con una CVE específica
-cve_info = get_cve_info("CVE-2023-48795")
-if cve_info:
+cve_id = "CVE-2023-48795"
+cve_info = get_cve_info(cve_id)
+if "error" not in cve_info:
     print(f"CVE ID: {cve_info['cve_id']}")
+    print(f"Descripci贸n: {cve_info['description']}")
     print(f"CVSS Score: {cve_info['cvss_score']}")
-    print(f"CVSS Type: {cve_info['cvss_type']}")
-    print(f"Description: {cve_info['description']}")
+    print(f"Versi贸n CVSS: {cve_info['cvss_version']}")
 else:
-    print("No se encontraron datos para la CVE.")
+    print(cve_info["error"])
