@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizar Vulnerabilidad</title>
+</head>
+<body>
+    <h1>Consulta de CVE</h1>
+    <form action="/check_cve" method="get">
+        <label for="cve_id">Ingrese el ID de CVE:</label>
+        <input type="text" id="cve_id" name="cve_id" required>
+        <button type="submit">Consultar</button>
+    </form>
+
+    {% if cve_info %}
+        <h2>Información de la CVE:</h2>
+        <p><strong>CVE ID:</strong> {{ cve_info['cve_id'] }}</p>
+        <p><strong>CVSS Score:</strong> {{ cve_info['cvss_score'] }}</p>
+        <p><strong>Description:</strong> {{ cve_info['description'] }}</p>
+    {% elif error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
+

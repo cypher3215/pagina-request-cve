@@ -1,0 +1,27 @@
+{
+    "result": {
+        "CVE_Items": [
+            {
+                "cve": {
+                    "CVE_data_meta": {
+                        "ID": "CVE-2023-48795"
+                    },
+                    "description": {
+                        "description_data": [
+                            {
+                                "value": "Un desbordamiento de buffer..."
+                            }
+                        ]
+                    }
+                },
+                "impact": {
+                    "baseMetricV3": {
+                        "cvssV3": {
+                            "baseScore": 7.5
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}
