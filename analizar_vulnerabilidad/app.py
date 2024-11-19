@@ -29,7 +29,7 @@ def get_cve_info(cve_id):
     except requests.exceptions.RequestException as e:
         return {"error": f"Error de conexi贸n: {e}"}
 
-cve_id = "CVE-2023-48795"
+cve_id = input("CVE : ")
 cve_info = get_cve_info(cve_id)
 if "error" not in cve_info:
     print(f"CVE ID: {cve_info['cve_id']}")
